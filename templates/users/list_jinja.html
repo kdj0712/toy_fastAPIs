@@ -17,9 +17,9 @@
         <tbody>
             {% for user in users %}
             <tr>
-                <td> {{loop.index0 + 2}},{{user.id}} </td>
+                <td> {{loop.index0+1}},{{user._id}} </td>
                 <td> {{user.name}} </td>
-                <td> {{user.Email | length }},{{user.Email}}  </td>
+                <td> {{user.email | length }},{{user.email}} </td>
                 <td><button formaction="/users/read/{{user.id}}">read</button></td>
             </tr>
             {% endfor %}

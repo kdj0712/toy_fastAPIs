@@ -47,16 +47,35 @@ async def list(request:Request):
     print(dict(await request.form()))
     return templates.TemplateResponse(name="users/list.html", context={'request':request})
 
+# from pymongo import MongoClient 
+# mongoClient = MongoClient("mongodb://localhost:27017")
+# database = mongoClient["toy_fastapis"]
+# collection = database['users']
+
 @router.get("/list") # 펑션 호출 방식
 async def list(request:Request):
-    print(dict(request._query_params))
-    user_list = [
-    {"id": 1, "name": "김철수", "email": "cheolsu@example.com"},
-    {"id": 2, "name": "이영희", "email": "younghi@example.com"},
-    {"id": 3, "name": "박지성", "email": "jiseong@example.com"},
-    {"id": 4, "name": "김미나", "email": "mina@example.com"},
-    {"id": 5, "name": "장현우", "email": "hyeonwoo@example.com"}
-    ]
+    # print(dict(request._query_params))
+    # user_list = [
+    # {"id": 1, "name": "김철수", "email": "cheolsu@example.com"},
+    # {"id": 2, "name": "이영희", "email": "younghi@example.com"},
+    # {"id": 3, "name": "박지성", "email": "jiseong@example.com"},
+    # {"id": 4, "name": "김미나", "email": "mina@example.com"},
+    # {"id": 5, "name": "장현우", "email": "hyeonwoo@example.com"}
+    # ]
+
+    # insert 작업 진행
+    # documents = collection.find({})
+
+    # documents.next() # 오류 여부 확인용 in debug mode
+
+    user_list=[]
+    # cast cursor to list
+    # user_list = list()
+
+    # for document in documents:
+    #     # print("document : {}".format(document))
+    #     user_list.append(document)
+    # pass
     return templates.TemplateResponse(name="users/list_jinja.html", context={'request':request,
                                                                        'users': user_list})
 
