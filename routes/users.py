@@ -40,6 +40,20 @@ async def insert(request:Request):
     print(dict(request._query_params))
     return templates.TemplateResponse(name="users/login.html", context={'request':request})
 
+@router.post("/insert") # 펑션 호출 방식
+async def insert_post(request:Request):
+    user_dict = dict(await request.form())
+    print(user_dict)
+    # 이상 저장
+
+    user = User(**user_dict)
+    await collection_user.save(user)
+
+    user_list = await collection_user.get_all()
+    # 리스트 정보
+    return templates.TemplateResponse(name="users/list_jinja.html", context={'request':request,
+                                                                       'users':user_list})
+
 # 회원 리스트 /users/list -> users/list.html
 @router.post("/list") # 펑션 호출 방식
 async def list(request:Request):
@@ -51,7 +65,9 @@ async def list(request:Request):
 # mongoClient = MongoClient("mongodb://localhost:27017")
 # database = mongoClient["toy_fastapis"]
 # collection = database['users']
-
+from databases.connections import Database
+from models.users import User
+collection_user = Database(User)
 @router.get("/list") # 펑션 호출 방식
 async def list(request:Request):
     # print(dict(request._query_params))
@@ -68,7 +84,7 @@ async def list(request:Request):
 
     # documents.next() # 오류 여부 확인용 in debug mode
 
-    user_list=[]
+    user_list = await collection_user.get_all()
     # cast cursor to list
     # user_list = list()
 
@@ -79,12 +95,14 @@ async def list(request:Request):
     return templates.TemplateResponse(name="users/list_jinja.html", context={'request':request,
                                                                        'users': user_list})
 
+from beanie import PydanticObjectId
 # 회원 상세정보 /users/read -> users/reads.html
 # Path parameters : /users/read/id or /users/read/uniqe_name
 @router.get("/read/{object_id}") # 펑션 호출 방식
-async def reads(request:Request, object_id):
+async def reads(request:Request, object_id:PydanticObjectId):
     print(dict(request._query_params))
-    return templates.TemplateResponse(name="users/reads.html", context={'request':request})
+    user = await collection_user.get(object_id)
+    return templates.TemplateResponse(name="users/reads.html", context={'request':request, 'user':user})
 
 @router.post("/read/{object_id}") # 펑션 호출 방식
 async def reads(request:Request, object_id):

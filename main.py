@@ -2,7 +2,7 @@ from fastapi import FastAPI
 app = FastAPI()
 from databases.connections import Settings
 settings = Settings()
-@app.on_event("startup")
+@app.on_event('startup')
 async def init_db():
     await settings.initialize_database()
 
