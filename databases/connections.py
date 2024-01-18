@@ -3,7 +3,7 @@ from beanie import init_beanie, PydanticObjectId
 from models.users import User
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic_settings import BaseSettings
-
+from utils.paginations import Paginations
 
 
 class Settings(BaseSettings):
@@ -40,3 +40,21 @@ class Database:
     async def save(self, document) -> None:
         await document.create()
         return None
+    
+    # column 값으로 여러 Documents 가져오기
+    async def getsbyconditions(self, conditions:dict) -> [Any]:
+        documents = await self.model.find(conditions).to_list()  # find({})
+        if documents:
+            return documents
+        return False    
+    
+    async def getsbyconditionswithpagination(self
+                                             , conditions:dict, page_number) -> [Any]:
+        # find({})
+        total = await self.model.find(conditions).count()
+        pagination = Paginations(total_records=total, current_page=page_number) #찾을 대상이 되는 모든 RECORD의 개수
+        documents = await self.model.find(conditions).skip(pagination.start_record_number).limit(pagination.records_per_page).to_list()
+        # 찾을 대상의 시작할 부분의 페지이 번호과, 반복할 개수 부분?(예를 들어 10개씩 반복)
+        if documents:
+            return documents, pagination
+        return False    
