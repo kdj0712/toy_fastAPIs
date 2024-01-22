@@ -11,6 +11,16 @@ router = APIRouter(
 
 user_api_database = Database(User)
 
+# http://127.0.0.1:8000/user_api_router/
+#     {
+#         "name": "김덕재2",
+#         "email": "kdj0712@google.com",
+#         "pswd": "hijklmn",
+#         "manager": "on",
+#         "sellist1": "Option3",
+#         "text": "만나서 반갑습니다.잘 부탁해요"
+#     }
+
 # 새로운 record 추가  = 회원가입
 @router.post("/")
 async def create_id(body: User) -> dict:
@@ -20,8 +30,20 @@ async def create_id(body: User) -> dict:
         ,"datas": document
     }
 
+
+# http://127.0.0.1:8000/user_api_router/65974f1dc5cd3d08cca7d956/password8
+# {
+#     "_id": "65974f1dc5cd3d08cca7d956",
+#     "name": "유재석",
+#     "email": "yoojaeseok@example.com",
+#     "pswd": "password8",
+#     "manager": "Manager8",
+#     "sellist1": "Option8",
+#     "text": "안녕하세요. 유재석입니다."
+# }
+
 # id 기준으로 한 한개의 Row(record)를 가져오는 것 = 회원정보 가져오기
-@router.get("/{id}", response_model=User)
+@router.get("/{id}/{pswd}", response_model=User)
 async def get_users_id(id: PydanticObjectId) -> User:
     users_id = await user_api_database.get(id)
     if not users_id:
@@ -30,6 +52,7 @@ async def get_users_id(id: PydanticObjectId) -> User:
             detail="Event with supplied ID does not exist"
         )
     return users_id
+
 
 
 # ID에 따른 record의 삭제 = 회원탈퇴
@@ -47,6 +70,17 @@ async def delete_id(id: PydanticObjectId) -> dict:
         "message": "Event deleted successfully."
         ,"datas": del_users
     }
+
+
+# http://127.0.0.1:8000/user_api_router/65974f1dc5cd3d08cca7d956
+#     {
+#         "name": "김덕재",
+#         "email": "kdj0712@google.com",
+#         "pswd": "abcdefg",
+#         "manager": "on",
+#         "sellist1": "Option3",
+#         "text": "만나서 반갑습니다.잘 부탁해요, 이제 집에 갑시다"
+#     }
 
 
 # 회원정보 업데이트 기능
@@ -67,14 +101,6 @@ async def update_id_withjson(id: PydanticObjectId, request:Request) -> User:
             detail="Event with supplied ID does not exist"
         )
     return updated_user_api
-
-
-# 전체 내용 가져오기
-# 내가 원하는 방식으로 하려면  response_model=List[Event] 이부분을 손본다.
-# @router.get("/", response_model=List[Event])
-# async def retrieve_all_events() -> List[Event]:
-#     events = await event_database.get_all()
-#     return events
 
 
 @router.get("/")
