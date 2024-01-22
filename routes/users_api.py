@@ -26,7 +26,7 @@ user_api_database = Database(User)
 async def create_id(body: User) -> dict:
     document = await user_api_database.save(body)
     return {
-        "message": "Event created successfully"
+        "message": "UserAccout created successfully"
         ,"datas": document
     }
 
@@ -44,12 +44,20 @@ async def create_id(body: User) -> dict:
 
 # id 기준으로 한 한개의 Row(record)를 가져오는 것 = 회원정보 가져오기
 @router.get("/{id}/{pswd}", response_model=User)
-async def get_users_id(id: PydanticObjectId) -> User:
-    users_id = await user_api_database.get(id)
-    if not users_id:
+async def get_users_id(id: PydanticObjectId, pswd : str) -> User: 
+    # router.get을 수행할 시(즉,경로에 입력할 시)의 pswd를 불러온다.
+    users_id = await user_api_database.get(id) 
+    if not users_id: # 입력한 id의 값이 users_id에 해당되지 않는다면 if구문 안에 있는 행동을 합니다.
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event with supplied ID does not exist"
+            detail="UserAccount with supplied ID does not exist" 
+            #제공된 ID를 가진 사용자 계정이 존재하지 않습니다.
+        )
+    if users_id.pswd != pswd :
+     # mongodb에 저장된 pswd의 값인 users_id.pswd와 입력받은 매개변수의 pswd가 일치하지 않을 경우 if 구문 안에 있는 행동을 한다.
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,#승인할 수 없다는 의미의 에러코드
+            detail="Wrong password" # 출력 구문은 알아서 지정한다.
         )
     return users_id
 
@@ -62,12 +70,12 @@ async def delete_id(id: PydanticObjectId) -> dict:
     if not del_users:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event not found"
+            detail="UserID not found"
         )
     del_users = await user_api_database.delete(id)
 
     return {
-        "message": "Event deleted successfully."
+        "message": "UserAccout deleted successfully."
         ,"datas": del_users
     }
 
@@ -91,14 +99,14 @@ async def update_id_withjson(id: PydanticObjectId, request:Request) -> User:
     if not user_api:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event not found"
+            detail="UserID not found"
         )
     body = await request.json()
     updated_user_api = await user_api_database.update_withjson(id, body)
     if not updated_user_api:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event with supplied ID does not exist"
+            detail="update user with supplied ID does not exist"
         )
     return updated_user_api
 
@@ -106,4 +114,4 @@ async def update_id_withjson(id: PydanticObjectId, request:Request) -> User:
 @router.get("/")
 async def retrieve_all_ids() -> dict :
     user_apis = await user_api_database.get_all()
-    return {"total_count":len(user_apis),'datas':user_apis}
+    return {"total_count":len(user_apis),'user_datas':user_apis}
