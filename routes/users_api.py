@@ -35,17 +35,17 @@ async def get_users_id(id: PydanticObjectId) -> User:
 # ID에 따른 record의 삭제 = 회원탈퇴
 @router.delete("/{id}")
 async def delete_id(id: PydanticObjectId) -> dict:
-    event = await user_api_database.get(id)
-    if not event:
+    del_users = await user_api_database.get(id)
+    if not del_users:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Event not found"
         )
-    event = await user_api_database.delete(id)
+    del_users = await user_api_database.delete(id)
 
     return {
         "message": "Event deleted successfully."
-        ,"datas": event
+        ,"datas": del_users
     }
 
 
@@ -53,20 +53,20 @@ async def delete_id(id: PydanticObjectId) -> dict:
 from fastapi import Request
 @router.put("/{id}", response_model=User)
 async def update_id_withjson(id: PydanticObjectId, request:Request) -> User:
-    event = await user_api_database.get(id)
-    if not event:
+    user_api = await user_api_database.get(id)
+    if not user_api:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Event not found"
         )
     body = await request.json()
-    updated_event = await user_api_database.update_withjson(id, body)
-    if not updated_event:
+    updated_user_api = await user_api_database.update_withjson(id, body)
+    if not updated_user_api:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Event with supplied ID does not exist"
         )
-    return updated_event
+    return updated_user_api
 
 
 # 전체 내용 가져오기
@@ -79,5 +79,5 @@ async def update_id_withjson(id: PydanticObjectId, request:Request) -> User:
 
 @router.get("/")
 async def retrieve_all_ids() -> dict :
-    events = await user_api_database.get_all()
-    return {"total_count":len(events),'datas':events}
+    user_apis = await user_api_database.get_all()
+    return {"total_count":len(user_apis),'datas':user_apis}
