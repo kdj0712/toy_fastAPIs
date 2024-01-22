@@ -1,10 +1,11 @@
 from typing import Any, List, Optional
 from beanie import init_beanie, PydanticObjectId
+from models.events import Event
 from models.users import User
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic_settings import BaseSettings
 from utils.paginations import Paginations
-
+import json
 
 class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
@@ -12,7 +13,7 @@ class Settings(BaseSettings):
     async def initialize_database(self): # 비동기화 되어 있으므로 즉각적인 반응이 있지는 않지만, 업무 자체는 완료할 수 있도록 한다.
         client = AsyncIOMotorClient(self.DATABASE_URL)
         await init_beanie(database=client.get_default_database(),
-                          document_models=[User])
+                          document_models=[User,Event])
         
     class Config:
         env_file = ".env"
@@ -36,10 +37,17 @@ class Database:
             return doc
         return False
     
+    async def delete(self, id: PydanticObjectId):
+        doc = await self.get(id)
+        if not doc:
+            return False
+        await doc.delete()
+        return True
+
     # 저장
     async def save(self, document) -> None:
-        await document.create()
-        return None
+        docs = await document.create()
+        return docs
     
     # column 값으로 여러 Documents 가져오기
     async def getsbyconditions(self, conditions:dict) -> [Any]:
@@ -47,6 +55,19 @@ class Database:
         if documents:
             return documents
         return False    
+    
+    # update with params json
+    async def update_withjson(self, id: PydanticObjectId, body: json):
+        doc_id = id
+
+        # des_body = {k: v for k, v in des_body.items() if v is not None}
+        update_query = {"$set": {**body}}
+
+        doc = await self.get(doc_id)
+        if not doc:
+            return False
+        await doc.update(update_query)
+        return doc
     
     async def getsbyconditionswithpagination(self
                                              , conditions:dict, page_number) -> [Any]:
